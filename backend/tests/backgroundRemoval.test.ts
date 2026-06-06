@@ -11,6 +11,7 @@ import { AppError } from "../src/utils/AppError.js";
 describe("removeBackground", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
     vi.restoreAllMocks();
@@ -43,6 +44,34 @@ describe("removeBackground", () => {
     await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
       statusCode: 502,
       code: "BACKGROUND_REMOVAL_FAILED",
+    });
+  });
+
+  it("reports a key/auth problem when remove.bg returns 403", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: async () => "Invalid API Key",
+    }) as unknown as typeof fetch;
+
+    await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
+      statusCode: 502,
+      code: "BACKGROUND_REMOVAL_FAILED",
+      message: expect.stringMatching(/api key/i),
+    });
+  });
+
+  it("reports an image problem when remove.bg returns 400", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: async () => "Could not identify foreground",
+    }) as unknown as typeof fetch;
+
+    await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
+      statusCode: 502,
+      code: "BACKGROUND_REMOVAL_FAILED",
+      message: expect.stringMatching(/image/i),
     });
   });
 

@@ -35,11 +35,23 @@ export async function removeBackground(input: Buffer): Promise<Buffer> {
   }
 
   if (!response.ok) {
-    throw new AppError(
-      502,
-      "BACKGROUND_REMOVAL_FAILED",
-      "Background removal failed. The service may be over quota or rejected the image.",
-    );
+    const detail = await response.text().catch(() => "");
+    console.error(`remove.bg request failed: HTTP ${response.status} ${detail}`.trim());
+
+    let message: string;
+    if (response.status === 401 || response.status === 403) {
+      message =
+        "Background removal failed: the remove.bg API key was rejected. Check REMOVE_BG_API_KEY.";
+    } else if (response.status === 402 || response.status === 429) {
+      message =
+        "Background removal failed: the remove.bg account is out of credits or is being rate limited.";
+    } else if (response.status === 400) {
+      message = "Background removal failed: remove.bg could not process this image.";
+    } else {
+      message = "Background removal failed. Please try again.";
+    }
+
+    throw new AppError(502, "BACKGROUND_REMOVAL_FAILED", message);
   }
 
   const arrayBuffer = await response.arrayBuffer();
