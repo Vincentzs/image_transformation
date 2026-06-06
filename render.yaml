@@ -1,0 +1,43 @@
+services:
+  # Backend — Express + TypeScript REST API
+  - type: web
+    name: image-transformation-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # PORT is injected automatically by Render.
+      # Secrets and the frontend origin are set in the dashboard (sync: false).
+      - key: REMOVE_BG_API_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  # Frontend — React + Vite static SPA
+  - type: web
+    name: image-transformation-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Point this at the deployed backend URL (set in the dashboard).
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
