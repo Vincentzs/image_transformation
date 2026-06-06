@@ -10,7 +10,7 @@ const TIMEOUT_MS = 30_000;
  */
 export async function removeBackground(input: Buffer): Promise<Buffer> {
   const form = new FormData();
-  form.append("image_file", new Blob([input]), "upload");
+  form.append("image_file", new Blob([new Uint8Array(input)]), "upload");
   form.append("size", "auto");
 
   const controller = new AbortController();
