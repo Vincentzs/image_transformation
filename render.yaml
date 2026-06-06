@@ -5,12 +5,12 @@ services:
     runtime: node
     rootDir: backend
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/index.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "20.18.1"
       # PORT is injected automatically by Render.
       # Secrets and the frontend origin are set in the dashboard (sync: false).
       - key: REMOVE_BG_API_KEY
@@ -29,11 +29,11 @@ services:
     name: image-transformation-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "20.18.1"
       # Point this at the deployed backend URL (set in the dashboard).
       - key: VITE_API_BASE_URL
         sync: false
