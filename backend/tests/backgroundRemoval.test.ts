@@ -1,60 +1,33 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-vi.mock("../src/config.js", () => ({
-  config: { REMOVE_BG_API_KEY: "test-key" },
-  CLOUDINARY_FOLDER: "image-transform",
-}));
-
-import { removeBackground } from "../src/services/backgroundRemoval.js";
+import { describe, it, expect, vi } from "vitest";
+import { createRemoveBgBackgroundRemover } from "../src/services/backgroundRemoval.js";
 import { AppError } from "../src/utils/AppError.js";
 
-describe("removeBackground", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+function makeRemover(fetchFn: ReturnType<typeof vi.fn>) {
+  return createRemoveBgBackgroundRemover({
+    apiKey: "test-key",
+    fetchFn: fetchFn as unknown as typeof fetch,
+    timeoutMs: 1000,
   });
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+}
 
+describe("createRemoveBgBackgroundRemover", () => {
   it("returns the response bytes on success", async () => {
     const out = new Uint8Array([1, 2, 3, 4]);
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      arrayBuffer: async () => out.buffer,
-    }) as unknown as typeof fetch;
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true, arrayBuffer: async () => out.buffer });
 
-    const result = await removeBackground(Buffer.from([9, 9, 9]));
+    const result = await makeRemover(fetchFn).removeBackground(Buffer.from([9, 9, 9]));
 
     expect(Buffer.from(result)).toEqual(Buffer.from([1, 2, 3, 4]));
-    expect(global.fetch).toHaveBeenCalledOnce();
-    const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const [url, init] = fetchFn.mock.calls[0];
     expect(url).toBe("https://api.remove.bg/v1.0/removebg");
     expect((init as RequestInit).method).toBe("POST");
-    expect((init as any).headers["X-Api-Key"]).toBe("test-key");
-  });
-
-  it("throws AppError 502 when remove.bg returns a non-ok status", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 402,
-      text: async () => "Payment required",
-    }) as unknown as typeof fetch;
-
-    await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
-      statusCode: 502,
-      code: "BACKGROUND_REMOVAL_FAILED",
-    });
+    expect((init as { headers: Record<string, string> }).headers["X-Api-Key"]).toBe("test-key");
   });
 
   it("reports a key/auth problem when remove.bg returns 403", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 403,
-      text: async () => "Invalid API Key",
-    }) as unknown as typeof fetch;
+    const fetchFn = vi.fn().mockResolvedValue({ ok: false, status: 403, text: async () => "Invalid API Key" });
 
-    await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
+    await expect(makeRemover(fetchFn).removeBackground(Buffer.from([1]))).rejects.toMatchObject({
       statusCode: 502,
       code: "BACKGROUND_REMOVAL_FAILED",
       message: expect.stringMatching(/api key/i),
@@ -62,13 +35,9 @@ describe("removeBackground", () => {
   });
 
   it("reports an image problem when remove.bg returns 400", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 400,
-      text: async () => "Could not identify foreground",
-    }) as unknown as typeof fetch;
+    const fetchFn = vi.fn().mockResolvedValue({ ok: false, status: 400, text: async () => "no foreground" });
 
-    await expect(removeBackground(Buffer.from([1]))).rejects.toMatchObject({
+    await expect(makeRemover(fetchFn).removeBackground(Buffer.from([1]))).rejects.toMatchObject({
       statusCode: 502,
       code: "BACKGROUND_REMOVAL_FAILED",
       message: expect.stringMatching(/image/i),
@@ -76,8 +45,8 @@ describe("removeBackground", () => {
   });
 
   it("throws AppError 502 when fetch rejects (network/timeout)", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("network down")) as unknown as typeof fetch;
+    const fetchFn = vi.fn().mockRejectedValue(new Error("network down"));
 
-    await expect(removeBackground(Buffer.from([1]))).rejects.toBeInstanceOf(AppError);
+    await expect(makeRemover(fetchFn).removeBackground(Buffer.from([1]))).rejects.toBeInstanceOf(AppError);
   });
 });

@@ -1,0 +1,35 @@
+.zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  text-align: center;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.zone:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dragOver {
+  border-color: var(--color-primary-strong);
+  background: var(--color-primary-bg);
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+}

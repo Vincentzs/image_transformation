@@ -1,29 +1,35 @@
 import type { Request, Response } from "express";
-import { removeBackground } from "../services/backgroundRemoval.js";
-import { flipHorizontal } from "../services/imageTransform.js";
-import { uploadImage, listImages, deleteImage } from "../services/storage.js";
 import { AppError } from "../utils/AppError.js";
+import type { ImageService } from "../services/ports.js";
 
-export async function createImage(req: Request, res: Response): Promise<void> {
-  if (!req.file) {
-    throw new AppError(400, "NO_FILE", "No image file was provided.");
-  }
-  const noBg = await removeBackground(req.file.buffer);
-  const flipped = await flipHorizontal(noBg);
-  const image = await uploadImage(flipped);
-  res.status(201).json(image);
+export interface ImagesController {
+  create(req: Request, res: Response): Promise<void>;
+  list(req: Request, res: Response): Promise<void>;
+  remove(req: Request, res: Response): Promise<void>;
 }
 
-export async function getImages(_req: Request, res: Response): Promise<void> {
-  const images = await listImages();
-  res.status(200).json(images);
-}
+/** HTTP adapter: translates requests to {@link ImageService} calls and back. */
+export function createImagesController(service: ImageService): ImagesController {
+  return {
+    async create(req, res) {
+      if (!req.file) {
+        throw new AppError(400, "NO_FILE", "No image file was provided.");
+      }
+      const image = await service.process(req.file.buffer);
+      res.status(201).json(image);
+    },
 
-export async function removeImage(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  if (!id) {
-    throw new AppError(400, "NO_ID", "No image id was provided.");
-  }
-  await deleteImage(id);
-  res.status(204).send();
+    async list(_req, res) {
+      res.status(200).json(await service.list());
+    },
+
+    async remove(req, res) {
+      const id = req.params.id;
+      if (!id) {
+        throw new AppError(400, "NO_ID", "No image id was provided.");
+      }
+      await service.remove(id);
+      res.status(204).send();
+    },
+  };
 }

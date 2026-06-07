@@ -1,0 +1,5 @@
+.button {
+  padding: var(--space-2) 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}

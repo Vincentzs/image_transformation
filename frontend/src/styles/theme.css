@@ -1,0 +1,23 @@
+/* Design tokens — single source of truth for color, radius, and spacing. */
+:root {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-primary: #2563eb;
+  --color-primary-strong: #3b82f6;
+  --color-primary-bg: #eef4ff;
+  --color-border: #c4c8cf;
+  --color-input-border: #d1d5db;
+  --color-placeholder: #eef0f3;
+  --color-error: #b91c1c;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  --space-1: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+}

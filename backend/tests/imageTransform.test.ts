@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import sharp from "sharp";
-import { flipHorizontal } from "../src/services/imageTransform.js";
+import { createSharpImageTransformer } from "../src/services/imageTransform.js";
+
+const { flipHorizontal } = createSharpImageTransformer();
 
 async function makeTwoPixelPng(): Promise<Buffer> {
   // 2x1 RGB: pixel 0 = red, pixel 1 = blue
@@ -8,7 +10,7 @@ async function makeTwoPixelPng(): Promise<Buffer> {
   return sharp(raw, { raw: { width: 2, height: 1, channels: 3 } }).png().toBuffer();
 }
 
-describe("flipHorizontal", () => {
+describe("createSharpImageTransformer", () => {
   it("mirrors the image so left and right pixels swap", async () => {
     const input = await makeTwoPixelPng();
 

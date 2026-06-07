@@ -1,12 +1,14 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
+import styles from "./CopyUrlButton.module.css";
 
 interface Props {
   url: string;
-  style?: CSSProperties;
+  /** Extra class for layout overrides from the parent (e.g. full-width in a card). */
+  className?: string;
 }
 
 /** Copies a URL to the clipboard and briefly shows a confirmation. */
-export function CopyUrlButton({ url, style }: Props) {
+export function CopyUrlButton({ url, className }: Props) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -20,7 +22,7 @@ export function CopyUrlButton({ url, style }: Props) {
       type="button"
       onClick={copy}
       aria-label="Copy image URL"
-      style={{ padding: "8px 14px", borderRadius: 6, cursor: "pointer", ...style }}
+      className={[styles.button, className].filter(Boolean).join(" ")}
     >
       {copied ? "Copied!" : "Copy URL"}
     </button>

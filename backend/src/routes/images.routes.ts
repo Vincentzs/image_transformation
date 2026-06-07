@@ -1,10 +1,18 @@
 import { Router } from "express";
-import { uploadSingleImage } from "../middleware/upload.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { createImage, getImages, removeImage } from "../controllers/images.controller.js";
+import { createUploadMiddleware } from "../middleware/upload.js";
+import { createImagesController } from "../controllers/images.controller.js";
+import type { ImageService } from "../services/ports.js";
 
-export const imagesRouter = Router();
+/** Builds the `/api/images` router around an injected {@link ImageService}. */
+export function createImagesRouter(service: ImageService): Router {
+  const controller = createImagesController(service);
+  const router = Router();
 
-imagesRouter.post("/", uploadSingleImage, asyncHandler(createImage));
-imagesRouter.get("/", asyncHandler(getImages));
-imagesRouter.delete("/:id(*)", asyncHandler(removeImage));
+  router.post("/", createUploadMiddleware(), asyncHandler(controller.create));
+  router.get("/", asyncHandler(controller.list));
+  // `:id(*)` so folder-qualified Cloudinary public_ids (e.g. image-transform/abc) round-trip.
+  router.delete("/:id(*)", asyncHandler(controller.remove));
+
+  return router;
+}

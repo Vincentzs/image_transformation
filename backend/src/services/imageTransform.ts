@@ -1,9 +1,14 @@
 import sharp from "sharp";
+import type { ImageTransformer } from "./ports.js";
 
 /**
- * Flips an image horizontally (mirror left-to-right) and returns a PNG buffer.
- * `.flop()` is sharp's horizontal mirror; `.flip()` would be vertical.
+ * Image transformer backed by sharp. `.flop()` mirrors horizontally
+ * (`.flip()` would be vertical).
  */
-export async function flipHorizontal(input: Buffer): Promise<Buffer> {
-  return sharp(input).flop().png().toBuffer();
+export function createSharpImageTransformer(): ImageTransformer {
+  return {
+    async flipHorizontal(input: Buffer): Promise<Buffer> {
+      return sharp(input).flop().png().toBuffer();
+    },
+  };
 }

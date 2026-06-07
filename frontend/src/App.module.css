@@ -1,0 +1,24 @@
+.main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.title {
+  font-size: 28px;
+}
+
+.subtitle {
+  color: var(--color-muted);
+  margin-top: -8px;
+}
+
+.error {
+  color: var(--color-error);
+  margin-top: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: 20px;
+  margin-top: 2rem;
+}

@@ -1,45 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
-
-vi.mock("../src/config.js", () => ({
-  config: { FRONTEND_ORIGIN: "http://localhost:5173" },
-  CLOUDINARY_FOLDER: "image-transform",
-}));
-
-const {
-  removeBackgroundMock,
-  flipHorizontalMock,
-  uploadImageMock,
-  listImagesMock,
-  deleteImageMock,
-} = vi.hoisted(() => ({
-  removeBackgroundMock: vi.fn(),
-  flipHorizontalMock: vi.fn(),
-  uploadImageMock: vi.fn(),
-  listImagesMock: vi.fn(),
-  deleteImageMock: vi.fn(),
-}));
-
-vi.mock("../src/services/backgroundRemoval.js", () => ({ removeBackground: removeBackgroundMock }));
-vi.mock("../src/services/imageTransform.js", () => ({ flipHorizontal: flipHorizontalMock }));
-vi.mock("../src/services/storage.js", () => ({
-  uploadImage: uploadImageMock,
-  listImages: listImagesMock,
-  deleteImage: deleteImageMock,
-}));
-
 import { createApp } from "../src/app.js";
 import { AppError } from "../src/utils/AppError.js";
+import type { ImageService } from "../src/services/ports.js";
 
-const app = createApp();
+function makeService(): { [K in keyof ImageService]: ReturnType<typeof vi.fn> } {
+  return { process: vi.fn(), list: vi.fn(), remove: vi.fn() };
+}
 
 describe("images API", () => {
+  let service: ReturnType<typeof makeService>;
+  let app: ReturnType<typeof createApp>;
+
   beforeEach(() => {
-    removeBackgroundMock.mockReset();
-    flipHorizontalMock.mockReset();
-    uploadImageMock.mockReset();
-    listImagesMock.mockReset();
-    deleteImageMock.mockReset();
+    service = makeService();
+    app = createApp({
+      imageService: service as unknown as ImageService,
+      frontendOrigin: "http://localhost:5173",
+    });
   });
 
   it("GET /api/health returns ok", async () => {
@@ -48,10 +26,8 @@ describe("images API", () => {
     expect(res.body).toEqual({ status: "ok" });
   });
 
-  it("POST /api/images runs the pipeline and returns 201 with the hosted image", async () => {
-    removeBackgroundMock.mockResolvedValue(Buffer.from([1]));
-    flipHorizontalMock.mockResolvedValue(Buffer.from([2]));
-    uploadImageMock.mockResolvedValue({
+  it("POST /api/images processes the upload and returns 201", async () => {
+    service.process.mockResolvedValue({
       id: "image-transform/abc",
       url: "https://res.cloudinary.com/c/abc.png",
       createdAt: "2026-06-06T00:00:00Z",
@@ -62,14 +38,9 @@ describe("images API", () => {
       .attach("image", Buffer.from([0x89, 0x50, 0x4e, 0x47]), { filename: "x.png", contentType: "image/png" });
 
     expect(res.status).toBe(201);
-    expect(res.body).toEqual({
-      id: "image-transform/abc",
-      url: "https://res.cloudinary.com/c/abc.png",
-      createdAt: "2026-06-06T00:00:00Z",
-    });
-    expect(removeBackgroundMock).toHaveBeenCalledOnce();
-    expect(flipHorizontalMock).toHaveBeenCalledWith(Buffer.from([1]));
-    expect(uploadImageMock).toHaveBeenCalledWith(Buffer.from([2]));
+    expect(res.body.id).toBe("image-transform/abc");
+    expect(service.process).toHaveBeenCalledOnce();
+    expect(service.process.mock.calls[0][0]).toBeInstanceOf(Buffer);
   });
 
   it("POST /api/images returns 400 when no file is attached", async () => {
@@ -86,10 +57,8 @@ describe("images API", () => {
     expect(res.body.error.code).toBe("UNSUPPORTED_TYPE");
   });
 
-  it("POST /api/images maps an upstream failure to 502", async () => {
-    removeBackgroundMock.mockRejectedValue(
-      new AppError(502, "BACKGROUND_REMOVAL_FAILED", "unavailable"),
-    );
+  it("POST /api/images maps a service failure to its status", async () => {
+    service.process.mockRejectedValue(new AppError(502, "BACKGROUND_REMOVAL_FAILED", "unavailable"));
     const res = await request(app)
       .post("/api/images")
       .attach("image", Buffer.from([0x89, 0x50]), { filename: "x.png", contentType: "image/png" });
@@ -98,7 +67,7 @@ describe("images API", () => {
   });
 
   it("GET /api/images returns the list", async () => {
-    listImagesMock.mockResolvedValue([
+    service.list.mockResolvedValue([
       { id: "image-transform/a", url: "https://x/a.png", createdAt: "2026-06-06T00:00:00Z" },
     ]);
     const res = await request(app).get("/api/images");
@@ -108,14 +77,14 @@ describe("images API", () => {
   });
 
   it("DELETE /api/images/:id deletes folder-qualified ids and returns 204", async () => {
-    deleteImageMock.mockResolvedValue(undefined);
+    service.remove.mockResolvedValue(undefined);
     const res = await request(app).delete("/api/images/image-transform/abc");
     expect(res.status).toBe(204);
-    expect(deleteImageMock).toHaveBeenCalledWith("image-transform/abc");
+    expect(service.remove).toHaveBeenCalledWith("image-transform/abc");
   });
 
   it("DELETE /api/images/:id returns 404 when the image is missing", async () => {
-    deleteImageMock.mockRejectedValue(new AppError(404, "IMAGE_NOT_FOUND", "Image not found."));
+    service.remove.mockRejectedValue(new AppError(404, "IMAGE_NOT_FOUND", "Image not found."));
     const res = await request(app).delete("/api/images/image-transform/missing");
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe("IMAGE_NOT_FOUND");

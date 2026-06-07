@@ -12,6 +12,8 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
 });
 
+export type Config = z.infer<typeof envSchema>;
+
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
@@ -20,4 +22,12 @@ if (!parsed.success) {
 }
 
 export const config = parsed.data;
+
+/** Application constants, centralized so they aren't scattered across modules. */
 export const CLOUDINARY_FOLDER = "image-transform";
+export const REMOVE_BG_ENDPOINT = "https://api.remove.bg/v1.0/removebg";
+export const REMOVE_BG_TIMEOUT_MS = 30_000;
+export const UPLOAD_LIMITS = {
+  maxBytes: 10 * 1024 * 1024, // 10 MB
+  allowedMimeTypes: ["image/png", "image/jpeg", "image/webp"] as const,
+};
