@@ -5,7 +5,7 @@ services:
     runtime: node
     rootDir: backend
     plan: free
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: 'npm ci --include=dev; code=$?; echo "=== npm ci exit=$code ==="; echo "=== DEBUG LOG TAIL ==="; tail -n 150 /opt/render/.cache/_logs/*-debug-0.log 2>/dev/null || echo "(no debug log found)"; echo "=== node_modules entries: $(ls node_modules 2>/dev/null | wc -l) ==="; npm run build'
     startCommand: node dist/index.js
     healthCheckPath: /api/health
     envVars:
@@ -29,7 +29,7 @@ services:
     name: image-transformation-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: 'npm ci --include=dev; code=$?; echo "=== npm ci exit=$code ==="; echo "=== DEBUG LOG TAIL ==="; tail -n 150 /opt/render/.cache/_logs/*-debug-0.log 2>/dev/null || echo "(no debug log found)"; echo "=== node_modules entries: $(ls node_modules 2>/dev/null | wc -l) ==="; npm run build'
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
