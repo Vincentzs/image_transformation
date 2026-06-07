@@ -54,5 +54,8 @@ cd frontend && npm test
   Set `VITE_API_BASE_URL` to the deployed backend URL.
 
 ## Live URLs
-- Frontend: _add after deploy_
-- Backend: _add after deploy_
+- Frontend: https://image-transformation-frontend.onrender.com
+- Backend: https://image-transformation-backend.onrender.com
+
+> Hosted on Render's free tier — the backend spins down after ~15 min idle, so the
+> first request after a pause may take ~50 s to cold-start.
