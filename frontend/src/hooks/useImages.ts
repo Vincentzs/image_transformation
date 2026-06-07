@@ -8,6 +8,8 @@ export interface UseImages {
   processing: boolean;
   deletingId: string | null;
   error: string | null;
+  /** Increments on each successful upload — drives the confetti burst. */
+  successCount: number;
   upload: (file: File) => Promise<void>;
   remove: (id: string) => Promise<void>;
 }
@@ -22,6 +24,7 @@ export function useImages(): UseImages {
   const [processing, setProcessing] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successCount, setSuccessCount] = useState(0);
 
   const refresh = useCallback(async () => {
     try {
@@ -43,6 +46,7 @@ export function useImages(): UseImages {
       try {
         const result = await api.uploadImage(file);
         setLatest(result);
+        setSuccessCount((n) => n + 1);
         await refresh();
       } catch (e) {
         setError(messageOf(e, "Upload failed."));
@@ -70,7 +74,7 @@ export function useImages(): UseImages {
     [refresh],
   );
 
-  return { images, latest, processing, deletingId, error, upload, remove };
+  return { images, latest, processing, deletingId, error, successCount, upload, remove };
 }
 
 function messageOf(error: unknown, fallback: string): string {

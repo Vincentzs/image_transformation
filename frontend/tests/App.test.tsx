@@ -33,14 +33,14 @@ describe("App", () => {
 
     render(<App />);
 
-    await screen.findByText("No images yet. Upload one to get started.");
+    await screen.findByText(/nothing here yet/i);
 
     const file = new File(["x"], "photo.png", { type: "image/png" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => expect(uploadImage).toHaveBeenCalledWith(file));
-    expect(await screen.findByText("Result")).toBeInTheDocument();
+    expect(await screen.findByText(/ta-da/i)).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getAllByRole("img").some((img) => img.getAttribute("src") === "https://x/abc.png")).toBe(true),
     );

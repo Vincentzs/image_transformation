@@ -41,8 +41,9 @@ export function UploadDropzone({ onFileSelected, disabled }: Props) {
         if (!disabled) handleFiles(e.dataTransfer.files);
       }}
     >
-      <p className={styles.title}>Drop an image here or click to upload</p>
-      <p className={styles.hint}>PNG, JPEG, or WEBP · max 10 MB</p>
+      <span className={styles.icon} aria-hidden="true">🪄</span>
+      <p className={styles.title}>Drop your image here</p>
+      <p className={styles.hint}>or click to browse · PNG, JPEG, WEBP · up to 10 MB</p>
       <input
         ref={inputRef}
         type="file"

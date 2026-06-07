@@ -10,7 +10,9 @@ interface Props {
 
 export function Gallery({ images, onDelete, deletingId }: Props) {
   if (images.length === 0) {
-    return <p className={styles.empty}>No images yet. Upload one to get started.</p>;
+    return (
+      <p className={styles.empty}>Nothing here yet — upload an image to see the magic ✨</p>
+    );
   }
 
   return (

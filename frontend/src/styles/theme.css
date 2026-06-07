@@ -1,23 +1,58 @@
-/* Design tokens — single source of truth for color, radius, and spacing. */
+/* Design tokens — playful & colorful. Single source of truth. */
 :root {
-  --color-bg: #f5f6f8;
+  /* base */
+  --color-bg: #fff7fd;
   --color-surface: #ffffff;
-  --color-text: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-primary: #2563eb;
-  --color-primary-strong: #3b82f6;
-  --color-primary-bg: #eef4ff;
-  --color-border: #c4c8cf;
-  --color-input-border: #d1d5db;
-  --color-placeholder: #eef0f3;
-  --color-error: #b91c1c;
+  --color-text: #1f1147;
+  --color-muted: #8b7fa8;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
+  /* brand pops */
+  --color-primary: #7c3aed;
+  --color-primary-strong: #6d28d9;
+  --color-pink: #ec4899;
+  --color-amber: #f59e0b;
+  --color-cyan: #06b6d4;
+  --color-error: #e11d48;
 
+  /* gradients */
+  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #d946ef 50%, #ec4899 100%);
+  --gradient-soft: linear-gradient(135deg, #ede9fe 0%, #fae8ff 50%, #ffe4f0 100%);
+
+  /* surfaces */
+  --color-border: #ead9f7;
+  --color-input-border: #e9d5ff;
+
+  /* radius — generous & rounded */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  /* soft, tinted shadows */
+  --shadow-sm: 0 4px 14px rgba(124, 58, 237, 0.1);
+  --shadow-md: 0 12px 30px rgba(124, 58, 237, 0.16);
+  --shadow-glow: 0 10px 34px rgba(217, 70, 239, 0.32);
+
+  /* spacing */
   --space-1: 6px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 24px;
+
+  /* type */
+  --font-body: "Poppins", system-ui, -apple-system, sans-serif;
+  --font-display: "Fredoka", "Poppins", system-ui, sans-serif;
+
+  /* checkerboard for transparent (background-removed) images */
+  --checker:
+    linear-gradient(45deg, #eceaf2 25%, transparent 25%),
+    linear-gradient(-45deg, #eceaf2 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eceaf2 75%),
+    linear-gradient(-45deg, transparent 75%, #eceaf2 75%);
+  --checker-size: 16px 16px;
+  --checker-pos: 0 0, 0 8px, 8px -8px, -8px 0;
+
+  /* playful easing */
+  --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
