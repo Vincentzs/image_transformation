@@ -70,3 +70,22 @@
   background: var(--gradient-brand);
   transition: width 0.5s var(--bounce);
 }
+
+.mute {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--color-border);
+  background: #faf5ff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition:
+    transform 0.18s var(--bounce),
+    background 0.18s ease;
+}
+
+.mute:hover {
+  transform: translateY(-2px);
+  background: var(--gradient-soft);
+}

@@ -1,0 +1,31 @@
+.popup {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  z-index: 60;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #fff;
+  background: var(--gradient-brand);
+  padding: 0.4rem 1.1rem;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-glow);
+  animation: floatUp 1.3s var(--bounce) forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.8);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -4px) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -52px) scale(1);
+  }
+}

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import styles from "./Confetti.module.css";
 
 const COLORS = ["#7c3aed", "#ec4899", "#f59e0b", "#06b6d4", "#22c55e"];
-const PIECES = 90;
 
 interface Piece {
   id: number;
@@ -14,17 +13,19 @@ interface Piece {
 }
 
 interface Props {
-  /** Increment to fire a burst. 0 = idle (no burst). */
+  /** Change to fire a burst. 0 = idle (no burst). */
   fireKey: number;
+  /** Number of confetti pieces (default 90). */
+  pieces?: number;
 }
 
 /** Dependency-free confetti rain, triggered whenever `fireKey` changes. */
-export function Confetti({ fireKey }: Props) {
+export function Confetti({ fireKey, pieces: pieceCount = 90 }: Props) {
   const [pieces, setPieces] = useState<Piece[]>([]);
 
   useEffect(() => {
     if (fireKey === 0) return;
-    const burst = Array.from({ length: PIECES }, (_, i) => ({
+    const burst = Array.from({ length: pieceCount }, (_, i) => ({
       id: fireKey * 1000 + i,
       left: Math.random() * 100,
       color: COLORS[i % COLORS.length],

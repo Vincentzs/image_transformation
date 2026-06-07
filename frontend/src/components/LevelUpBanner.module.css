@@ -1,0 +1,59 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 1.6rem 2.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-brand);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+  animation: levelpop 2.2s var(--bounce) forwards;
+}
+
+.spark {
+  font-size: 2rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+}
+
+.level {
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+@keyframes levelpop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-6deg);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.08) rotate(2deg);
+  }
+  25% {
+    transform: scale(1) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}

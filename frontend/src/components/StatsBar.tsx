@@ -1,17 +1,26 @@
+import { useState } from "react";
 import { levelFor, levelProgress, PER_LEVEL, xpFor } from "../lib/gamification.js";
+import { isMuted, setMuted } from "../lib/sounds.js";
 import styles from "./StatsBar.module.css";
 
 interface Props {
   count: number;
 }
 
-/** Game HUD: level badge, XP, and a progress bar toward the next level. */
+/** Game HUD: level badge, XP, a progress bar to the next level, and a sound toggle. */
 export function StatsBar({ count }: Props) {
   const level = levelFor(count);
   const xp = xpFor(count);
   const progress = levelProgress(count);
   const pct = Math.round((progress / PER_LEVEL) * 100);
   const remaining = PER_LEVEL - progress;
+
+  const [muted, setMutedState] = useState(isMuted());
+  function toggleSound() {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  }
 
   return (
     <div className={styles.bar}>
@@ -30,6 +39,15 @@ export function StatsBar({ count }: Props) {
           <div className={styles.fill} style={{ width: `${pct}%` }} />
         </div>
       </div>
+      <button
+        type="button"
+        className={styles.mute}
+        onClick={toggleSound}
+        aria-label={muted ? "Unmute sounds" : "Mute sounds"}
+        title={muted ? "Unmute sounds" : "Mute sounds"}
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
     </div>
   );
 }

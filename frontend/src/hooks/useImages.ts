@@ -1,6 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../api.js";
 import type { ProcessedImage } from "../types.js";
+import { ACHIEVEMENTS, levelFor, XP_PER_IMAGE, type Achievement } from "../lib/gamification.js";
+
+export interface SuccessEvent {
+  /** Unique per upload; drives celebration effects. */
+  id: number;
+  xpGain: number;
+  /** The new level, if this upload crossed a level boundary; else null. */
+  leveledUpTo: number | null;
+  /** Achievements newly unlocked by this upload. */
+  unlocked: Achievement[];
+}
 
 export interface UseImages {
   images: ProcessedImage[];
@@ -8,15 +19,14 @@ export interface UseImages {
   processing: boolean;
   deletingId: string | null;
   error: string | null;
-  /** Increments on each successful upload — drives the confetti burst. */
-  successCount: number;
+  event: SuccessEvent | null;
   upload: (file: File) => Promise<void>;
   remove: (id: string) => Promise<void>;
 }
 
 /**
- * Encapsulates all gallery state and the API calls behind it, so view
- * components stay presentational and this logic is testable in isolation.
+ * Encapsulates gallery state, the API calls behind it, and the per-upload
+ * success event used to drive game celebrations.
  */
 export function useImages(): UseImages {
   const [images, setImages] = useState<ProcessedImage[]>([]);
@@ -24,13 +34,22 @@ export function useImages(): UseImages {
   const [processing, setProcessing] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [successCount, setSuccessCount] = useState(0);
+  const [event, setEvent] = useState<SuccessEvent | null>(null);
 
-  const refresh = useCallback(async () => {
+  // Live count for computing level/achievement deltas without stale closures.
+  const countRef = useRef(0);
+  useEffect(() => {
+    countRef.current = images.length;
+  }, [images.length]);
+
+  const refresh = useCallback(async (): Promise<ProcessedImage[] | null> => {
     try {
-      setImages(await api.listImages());
+      const list = await api.listImages();
+      setImages(list);
+      return list;
     } catch (e) {
       setError(messageOf(e, "Failed to load images."));
+      return null;
     }
   }, []);
 
@@ -44,10 +63,17 @@ export function useImages(): UseImages {
       setLatest(null);
       setProcessing(true);
       try {
+        const before = countRef.current;
         const result = await api.uploadImage(file);
         setLatest(result);
-        setSuccessCount((n) => n + 1);
-        await refresh();
+        const list = await refresh();
+        const after = list ? list.length : before + 1;
+        setEvent({
+          id: Date.now(),
+          xpGain: XP_PER_IMAGE,
+          leveledUpTo: levelFor(after) > levelFor(before) ? levelFor(after) : null,
+          unlocked: ACHIEVEMENTS.filter((a) => before < a.threshold && after >= a.threshold),
+        });
       } catch (e) {
         setError(messageOf(e, "Upload failed."));
       } finally {
@@ -74,7 +100,7 @@ export function useImages(): UseImages {
     [refresh],
   );
 
-  return { images, latest, processing, deletingId, error, successCount, upload, remove };
+  return { images, latest, processing, deletingId, error, event, upload, remove };
 }
 
 function messageOf(error: unknown, fallback: string): string {
