@@ -1,4 +1,5 @@
 import type { ProcessedImage } from "../types.js";
+import { CopyUrlButton } from "./CopyUrlButton.js";
 
 interface Props {
   images: ProcessedImage[];
@@ -26,10 +27,14 @@ export function Gallery({ images, onDelete, deletingId }: Props) {
             alt="Hosted result"
             style={{ width: "100%", height: 120, objectFit: "contain", background: "#eef0f3", borderRadius: 6 }}
           />
+          <CopyUrlButton
+            url={img.url}
+            style={{ marginTop: 8, width: "100%", padding: 6 }}
+          />
           <button
             onClick={() => onDelete(img.id)}
             disabled={deletingId === img.id}
-            style={{ marginTop: 8, width: "100%", padding: 6, borderRadius: 6, cursor: "pointer" }}
+            style={{ marginTop: 6, width: "100%", padding: 6, borderRadius: 6, cursor: "pointer" }}
           >
             {deletingId === img.id ? "Deleting…" : "Delete"}
           </button>

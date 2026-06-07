@@ -1,19 +1,11 @@
-import { useState } from "react";
 import type { ProcessedImage } from "../types.js";
+import { CopyUrlButton } from "./CopyUrlButton.js";
 
 interface Props {
   image: ProcessedImage;
 }
 
 export function ResultCard({ image }: Props) {
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    await navigator.clipboard.writeText(image.url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
   return (
     <div style={{ background: "#fff", borderRadius: 12, padding: "1rem", marginTop: "1rem" }}>
       <h2 style={{ marginTop: 0, fontSize: 18 }}>Result</h2>
@@ -29,9 +21,7 @@ export function ResultCard({ image }: Props) {
           aria-label="Image URL"
           style={{ flex: 1, padding: 8, borderRadius: 6, border: "1px solid #d1d5db" }}
         />
-        <button onClick={copy} style={{ padding: "8px 14px", borderRadius: 6, cursor: "pointer" }}>
-          {copied ? "Copied!" : "Copy URL"}
-        </button>
+        <CopyUrlButton url={image.url} />
       </div>
     </div>
   );
